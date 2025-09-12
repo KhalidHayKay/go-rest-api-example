@@ -22,13 +22,14 @@ pipeline {
 
         stage("Lint & Analysis") {
             agent {
-                docker {
-                    image 'golangci/golangci-lint:v1.59.0-alpine'
-                }
                 // dockerfile {
                 //     filename 'Dockerfile.ci'
                 //     args '-u root -v /var/lib/jenkins/.gocache:/go/cache -v /var/lib/jenkins/.gomod:/go/pkg'
                 // }
+                docker {
+                    image 'golangci/golangci-lint:v1.59.0-alpine'
+                    args '-u root'
+                }
             }
             steps {
                 // sh 'mkdir -p $GOCACHE'
