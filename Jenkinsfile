@@ -10,6 +10,7 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile.ci'
+                    args '-u root'
                 }
             }
             steps {
@@ -22,13 +23,14 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile.ci'
+                    args '-u root'
                 }
             }
             steps {
                 sh 'mkdir -p $GOCACHE'
                 sh 'golangci-lint run ./...'
                 // optional: add another analyzer
-                sh 'staticcheck ./... || true'
+                // sh 'staticcheck ./... || true'
             }
         }
 
