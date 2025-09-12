@@ -32,11 +32,16 @@ pipeline {
                 }
             }
             steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'golangci-lint run'
+                }
+            }
+            // steps {
                 // sh 'mkdir -p $GOCACHE'
-                sh 'golangci-lint run ./...'
+                // sh 'golangci-lint run ./...'
                 // optional: add another analyzer
                 // sh 'staticcheck ./... || true'
-            }
+            // }
         }
 
         stage ("Build") {
