@@ -1,8 +1,19 @@
 FROM golang:1.18-alpine
 
-# Install git (needed for go mod tidy etc.) and curl for golangci-lint installer
-RUN apk add --no-cache git curl bash
+# Install deps: git (for go modules), curl (for lint installer), bash, and build-base (gcc + musl + make)
+RUN apk add --no-cache git curl bash build-base
 
-# Install golangci-lint (lightweight binary install, no extra deps)
+# Set up environment for caching
+ENV GO111MODULE=on \
+    GOPATH=/go \
+    GOCACHE=/go/cache
+
+# Create cache directories
+RUN mkdir -p /go/pkg /go/cache
+
+# Install golangci-lint (binary install, lightweight)
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
     | sh -s -- -b /usr/local/bin v1.59.0
+
+# Default workdir (Jenkins mounts source here at runtime anyway)
+WORKDIR /app

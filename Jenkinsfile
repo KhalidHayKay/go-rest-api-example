@@ -10,7 +10,8 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile.ci'
-                    args '-u root'
+                    additionalBuildArgs '--build-arg=GOCACHE=/go/cache'
+                    args '-u root -v /var/lib/jenkins/.gocache:/go/cache -v /var/lib/jenkins/.gomod:/go/pkg'
                 }
             }
             steps {
@@ -23,7 +24,7 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile.ci'
-                    args '-u root'
+                    args '-u root -v /var/lib/jenkins/.gocache:/go/cache -v /var/lib/jenkins/.gomod:/go/pkg'
                 }
             }
             steps {
