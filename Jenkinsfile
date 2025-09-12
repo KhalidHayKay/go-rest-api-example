@@ -6,7 +6,6 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile.ci'
-                    label 'latest'
                 }
             }
             steps {
@@ -18,7 +17,6 @@ pipeline {
             agent {
                 dockerfile {
                     filename 'Dockerfile.ci'
-                    label 'latest'
                 }
             }
             steps {
