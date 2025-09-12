@@ -1,0 +1,18 @@
+run:
+ timeout: 5m
+
+linters:
+ enable:
+  - govet # built-in static analyzer
+  - staticcheck # advanced correctness checks
+  - unused # unused code detection
+  - gosimple # code simplifications
+  - ineffassign # detect ineffective assignments
+  - gosec # security issues (SQL injection, unsafe usage, etc.)
+  - errcheck # unhandled errors
+  - typecheck # type correctness
+
+issues:
+ exclude-use-default: false
+ max-issues-per-linter: 0
+ max-same-issues: 0

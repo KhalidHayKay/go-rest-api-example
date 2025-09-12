@@ -1,0 +1,8 @@
+FROM golang:1.18-alpine
+
+# Install git (needed for go mod tidy etc.) and curl for golangci-lint installer
+RUN apk add --no-cache git curl bash
+
+# Install golangci-lint (lightweight binary install, no extra deps)
+RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
+    | sh -s -- -b /usr/local/bin v1.59.0
