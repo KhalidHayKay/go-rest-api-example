@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        GOCACHE = "${WORKSPACE}/.gocache"
+    }
+
     stages {
         stage('Test') {
             agent {
@@ -9,7 +13,8 @@ pipeline {
                 }
             }
             steps {
-                sh 'go test ./...'
+                sh 'mkdir -p $GOCACHE'
+                sh 'go test ./... -v'
             }
         }
 
@@ -20,7 +25,10 @@ pipeline {
                 }
             }
             steps {
+                sh 'mkdir -p $GOCACHE'
                 sh 'golangci-lint run ./...'
+                // optional: add another analyzer
+                sh 'staticcheck ./... || true'
             }
         }
 
@@ -28,17 +36,17 @@ pipeline {
             steps {
                 sh "docker build -t go-rest-api-example ."
 
-                // Run container with a name
+                // Run container in background
                 sh "docker run --rm -d --name taskify-ci-test -p 5000:5000 go-rest-api-example"
 
-                // Wait for it to come up
+                // Wait for app to come up
                 sh "sleep 10"
 
                 // Verify app responds
                 sh "curl -f http://localhost:5000 || (echo 'App did not start' && exit 1)"
 
-                // Stop container
-                sh "docker stop taskify-ci-test"
+                // Stop container (ignore errors if not running)
+                sh "docker stop taskify-ci-test || true"
             }
         }
 
