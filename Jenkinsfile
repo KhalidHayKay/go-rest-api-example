@@ -6,6 +6,38 @@ pipeline {
     }
 
     stages {
+        // Always start by checking out the repo
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        // Lint & static analysis first, fail fast if code style / issues are present
+        stage("Lint & Analysis") {
+            agent {
+                docker {
+                    image 'golangci/golangci-lint:v1.59.0-alpine'
+                    args '-u root'
+                }
+            }
+            steps {
+                script {
+                    githubNotify context: 'Lint & Analysis', status: 'PENDING', description: 'Running lint checks'
+                }
+                sh 'golangci-lint run'
+            }
+            post {
+                success {
+                    githubNotify context: 'Lint & Analysis', status: 'SUCCESS', description: 'Lint passed'
+                }
+                failure {
+                    githubNotify context: 'Lint & Analysis', status: 'FAILURE', description: 'Lint issues found'
+                }
+            }
+        }
+
+        // Run unit tests
         stage('Test') {
             agent {
                 dockerfile {
@@ -15,37 +47,29 @@ pipeline {
                 }
             }
             steps {
+                script {
+                    githubNotify context: 'Tests', status: 'PENDING', description: 'Running unit tests'
+                }
                 sh 'mkdir -p $GOCACHE'
                 sh 'go test ./... -v'
             }
-        }
-
-        stage("Lint & Analysis") {
-            agent {
-                // dockerfile {
-                //     filename 'Dockerfile.ci'
-                //     args '-u root -v /var/lib/jenkins/.gocache:/go/cache -v /var/lib/jenkins/.gomod:/go/pkg'
-                // }
-                docker {
-                    image 'golangci/golangci-lint:v1.59.0-alpine'
-                    args '-u root'
+            post {
+                success {
+                    githubNotify context: 'Tests', status: 'SUCCESS', description: 'All tests passed'
+                }
+                failure {
+                    githubNotify context: 'Tests', status: 'FAILURE', description: 'Tests failed'
                 }
             }
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'golangci-lint run'
-                }
-            }
-            // steps {
-                // sh 'mkdir -p $GOCACHE'
-                // sh 'golangci-lint run ./...'
-                // optional: add another analyzer
-                // sh 'staticcheck ./... || true'
-            // }
         }
 
+        // Build & smoke test container
         stage ("Build") {
             steps {
+                script {
+                    githubNotify context: 'Build', status: 'PENDING', description: 'Building Docker image'
+                }
+
                 sh "docker build -t go-rest-api-example ."
 
                 // Run container in background
@@ -60,11 +84,31 @@ pipeline {
                 // Stop container (ignore errors if not running)
                 sh "docker stop taskify-ci-test || true"
             }
+            post {
+                success {
+                    githubNotify context: 'Build', status: 'SUCCESS', description: 'Build succeeded and app responded'
+                }
+                failure {
+                    githubNotify context: 'Build', status: 'FAILURE', description: 'Build failed or app did not respond'
+                }
+            }
         }
 
+        // Deployment (only runs if all above succeeded)
         stage ("Deploy") {
             steps {
+                script {
+                    githubNotify context: 'Deploy', status: 'PENDING', description: 'Starting deployment'
+                }
                 echo "Deployment steps go here"
+            }
+            post {
+                success {
+                    githubNotify context: 'Deploy', status: 'SUCCESS', description: 'Deployment succeeded'
+                }
+                failure {
+                    githubNotify context: 'Deploy', status: 'FAILURE', description: 'Deployment failed'
+                }
             }
         }
     }
