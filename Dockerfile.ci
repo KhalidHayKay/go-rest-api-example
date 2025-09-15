@@ -1,0 +1,23 @@
+FROM golang:1.18-alpine
+
+# Install deps: git (for go modules), curl (for lint installer), bash, and build-base (gcc + musl + make)
+RUN apk add --no-cache git curl bash build-base
+
+# Set up environment for caching
+ENV GO111MODULE=on \
+    GOPATH=/go \
+    GOCACHE=/go/cache
+
+# Create cache directories
+RUN mkdir -p /go/pkg /go/cache
+
+# Install golangci-lint (binary install, lightweight)
+# RUN apk add --no-cache ca-certificates curl \
+#     && curl -sSfL https://github.com/golangci/golangci-lint/releases/download/v1.59.0/golangci-lint-1.59.0-linux-amd64.tar.gz \
+#     | tar -xz -C /tmp \
+#     && mv /tmp/golangci-lint-1.59.0-linux-amd64/golangci-lint /usr/local/bin/ \
+#     && rm -rf /tmp/golangci-lint*
+
+
+# Default workdir (Jenkins mounts source here at runtime anyway)
+WORKDIR /app

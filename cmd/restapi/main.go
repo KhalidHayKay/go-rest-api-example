@@ -28,7 +28,7 @@ func main() {
 	signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		err := server.ListenAndServe("localhost:5000")
+		err := server.ListenAndServe(":5000")
 		if err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server failed: %v\n", err)
 		}
